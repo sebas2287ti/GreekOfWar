@@ -38,6 +38,31 @@ namespace Core.Controllers
 
         #region Control del Bucle de Simulación
 
+        // Añade este método en tu CoreGameController.cs dentro de #region Lógica del Mapa y Edificios
+
+        public bool OrderBuildDirect(int factionId, float targetX, float targetY, BuildingType buildingType)
+        {
+            
+            // --- NUEVO: Validar distancia mínima con otros edificios ---
+            const float minDistance = 3.5f; // Distancia mínima requerida en casillas/unidades
+            foreach (var existingBuilding in Buildings.Values)
+            {
+                float dx = existingBuilding.PositionX - targetX;
+                float dy = existingBuilding.PositionY - targetY;
+                float distSq = dx * dx + dy * dy;
+
+                if (distSq < (minDistance * minDistance))
+                {
+                    return false; // Rechaza la construcción si está muy cerca
+                }
+            }
+
+            
+            float cost = (buildingType == BuildingType.Base) ? 100f : 50f;
+
+            // Llama directamente al SystemController pasando las facciones, la facción del jugador (1), el tipo, las coordenadas y el costo
+            return _systemController.TryBuildStructure(Factions, factionId, buildingType, targetX, targetY, cost);
+        }
         public void StartSimulationLoop(int targetFps = 30)
         {
             if (_isRunning) return;
@@ -109,10 +134,25 @@ namespace Core.Controllers
         {
             if (Units.TryGetValue(builderId, out var builder))
             {
-                // Definir costos según el tipo de edificio
+                // --- VALIDACIÓN DE DISTANCIA MEJORADA ---
+                const float minDistance = 3.5f; // Rango mínimo obligatorio entre edificios
+                
+                foreach (var existingBuilding in Buildings.Values)
+                {
+                    float dx = existingBuilding.PositionX - targetX;
+                    float dy = existingBuilding.PositionY - targetY;
+                    float distSq = (dx * dx) + (dy * dy);
+
+                    // Si la distancia al cuadrado es menor al radio mínimo al cuadrado, BLOQUEA
+                    if (distSq < (minDistance * minDistance))
+                    {
+                        return false; 
+                    }
+                }
+                // ----------------------------------------
+
                 float cost = (buildingType == BuildingType.Base) ? 100f : 50f;
 
-                // Llamada limpia pasando el buildingType y el cost en el orden correcto
                 bool success = _systemController.TryBuildStructure(Factions, builder.FactionId, buildingType, targetX, targetY, cost);
 
                 if (success)
@@ -165,6 +205,8 @@ namespace Core.Controllers
         {
             _combatController.OrderAttack(Units, attackerId, targetId);
         }
+
+        
 
         private void UpdateIA()
         {

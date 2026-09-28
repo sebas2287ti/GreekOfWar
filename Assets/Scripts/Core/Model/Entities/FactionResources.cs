@@ -1,4 +1,3 @@
-// Core/Model/Entities/FactionResources.cs
 namespace Core.Model.Entities
 {
     public class FactionResources

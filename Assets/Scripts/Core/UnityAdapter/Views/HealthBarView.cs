@@ -28,10 +28,10 @@ namespace UnityAdapter.Views
 
             float healthPercent = Mathf.Clamp01(currentHealth / maxHealth);
 
-            // Reducir la escala horizontal
+     
             fillTransform.localScale = new Vector3(healthPercent, 1f, 1f);
 
-            // Gradiente de color según el % de vida
+      
             if (fillRenderer != null)
             {
                 if (healthPercent > 0.5f)

@@ -1,4 +1,3 @@
-// Core/Controllers/CombatController.cs
 using System;
 using System.Collections.Concurrent;
 using Core.Model.Entities;
@@ -43,10 +42,8 @@ namespace Core.Controllers
                         unit.TargetPositionX = unit.PositionX;
                         unit.TargetPositionY = unit.PositionY;
 
-                        // Aplicar daño asegurando que si el stat Damage es bajo, al menos haga un daño mínimo por golpe o escala real
                         float damageDealt = unit.Damage * deltaTime;
                         
-                        // Si el daño resultante es muy bajo por culpa del deltaTime, aplicamos un daño base por frame o el cálculo directo
                         target.Health -= damageDealt > 0 ? damageDealt : unit.Damage;
 
                         if (target.Health <= 0)

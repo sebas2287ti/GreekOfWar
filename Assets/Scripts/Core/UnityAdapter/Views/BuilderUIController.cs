@@ -3,56 +3,69 @@ using UnityEngine.UI;
 using Core.Controllers;
 using UnityAdapter.Views;
 using Core.Model.Enums;
+using System.Reflection;
 
 public class BuilderUIController : MonoBehaviour
 {
+    [Header("Sprites de Botones UI")]
+    [SerializeField] private Sprite btnBaseIcon;     
+    [SerializeField] private Sprite btnBarracksIcon; 
+
+    [Header("Sprites de Edificios en Mapa")]
+    [SerializeField] private Sprite allyBaseSprite;     
+    [SerializeField] private Sprite allyBarracksSprite; 
+    [SerializeField] private Sprite enemyBaseSprite;    
+    [SerializeField] private Sprite enemyBarracksSprite;
+
     private CoreGameController gameController;
     private GameObject buildOptionsPanel;
     private UnityUnitView selectedBuilder;
 
+ 
+    private const int COST_BASE = 100;
+    private const int COST_BARRACKS = 50;
+
     void Start()
     {
-        // Buscamos cualquier componente en la escena cuyo nombre de clase sea "GameBridgeAdapter"
-        // Esto evita errores de namespaces o falta de using directives.
         foreach (var mb in FindObjectsByType<MonoBehaviour>(FindObjectsSortMode.None))
         {
             if (mb.GetType().Name == "GameBridgeAdapter")
             {
-                // Extraemos el CoreGameController mediante reflexión (propiedad o campo)
-                var prop = mb.GetType().GetProperty("GameController");
-                if (prop != null)
+                var componentType = mb.GetType();
+                BindingFlags flags = BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance;
+
+                foreach (var prop in componentType.GetProperties(flags))
                 {
-                    gameController = (CoreGameController)prop.GetValue(mb);
-                }
-                else
-                {
-                    var field = mb.GetType().GetField("gameController");
-                    if (field != null)
+                    if (prop.PropertyType == typeof(CoreGameController))
                     {
-                        gameController = (CoreGameController)field.GetValue(mb);
+                        gameController = (CoreGameController)prop.GetValue(mb);
+                        if (gameController != null) break;
                     }
                 }
 
-                if (gameController != null)
+                if (gameController == null)
                 {
-                    Debug.Log("[BuilderUI] CoreGameController vinculado exitosamente a través de GameBridgeAdapter.");
-                    break;
+                    foreach (var field in componentType.GetFields(flags))
+                    {
+                        if (field.FieldType == typeof(CoreGameController))
+                        {
+                            gameController = (CoreGameController)field.GetValue(mb);
+                            if (gameController != null) break;
+                        }
+                    }
                 }
+
+                if (gameController != null) break;
             }
         }
 
-        if (gameController == null)
-        {
-            Debug.LogError("[BuilderUI] ¡No se pudo extraer el CoreGameController del GameBridgeAdapter en la escena!");
-        }
-        
-        // Generar la interfaz procedural
-        CreateBuildUIProcedurally();
+        GiveInitialGoldIfNeeded();
+
+        CreateVerticalBuilderUI();
     }
 
     void Update()
     {
-        // Detectar clic izquierdo del mouse para seleccionar unidades
         if (Input.GetMouseButtonDown(0))
         {
             if (Camera.main == null) return;
@@ -64,25 +77,53 @@ public class BuilderUIController : MonoBehaviour
             {
                 UnityUnitView unitView = hitCollider.GetComponent<UnityUnitView>();
                 
-                if (unitView != null)
+                if (unitView != null && unitView.Type == UnitType.Builder && unitView.FactionId == 1)
                 {
-                    // Verificamos si seleccionó un constructor de la facción 1 (Jugador)
-                    if (unitView.Type == UnitType.Builder && unitView.FactionId == 1)
+                    selectedBuilder = unitView;
+                    if (buildOptionsPanel != null)
                     {
-                        selectedBuilder = unitView;
-                        if (buildOptionsPanel != null)
-                        {
-                            buildOptionsPanel.SetActive(true);
-                            Debug.Log("[BuilderUI] ¡Panel inferior mostrado con éxito!");
-                        }
-                        return;
+                        buildOptionsPanel.SetActive(true);
                     }
+                    return;
                 }
             }
         }
     }
 
-    private void CreateBuildUIProcedurally()
+    private void GiveInitialGoldIfNeeded()
+    {
+        if (gameController == null) return;
+        var controllerType = gameController.GetType();
+        BindingFlags flags = BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance;
+
+        foreach (var prop in controllerType.GetProperties(flags))
+        {
+            if (prop.PropertyType == typeof(int) && (prop.Name.Equals("Gold", System.StringComparison.OrdinalIgnoreCase) || prop.Name.Equals("PlayerGold", System.StringComparison.OrdinalIgnoreCase)))
+            {
+                if (prop.CanWrite && (int)prop.GetValue(gameController) == 0)
+                {
+                    prop.SetValue(gameController, 200); // Les damos 200 de oro inicial para empezar a construir
+                    Debug.Log("[BuilderUI] Se han otorgado 200 de oro iniciales para pruebas.");
+                }
+                return;
+            }
+        }
+
+        foreach (var field in controllerType.GetFields(flags))
+        {
+            if (field.FieldType == typeof(int) && (field.Name.Equals("Gold", System.StringComparison.OrdinalIgnoreCase) || field.Name.Equals("PlayerGold", System.StringComparison.OrdinalIgnoreCase)))
+            {
+                if ((int)field.GetValue(gameController) == 0)
+                {
+                    field.SetValue(gameController, 200);
+                    Debug.Log("[BuilderUI] Se han otorgado 200 de oro iniciales en campo para pruebas.");
+                }
+                return;
+            }
+        }
+    }
+
+    private void CreateVerticalBuilderUI()
     {
         Canvas canvas = FindAnyObjectByType<Canvas>();
         if (canvas == null)
@@ -94,73 +135,82 @@ public class BuilderUIController : MonoBehaviour
             canvasObj.AddComponent<GraphicRaycaster>();
         }
 
-        buildOptionsPanel = new GameObject("BuildOptionsPanel");
+        buildOptionsPanel = new GameObject("BuildOptionsPanel_Vertical");
         buildOptionsPanel.transform.SetParent(canvas.transform, false);
 
         RectTransform panelRect = buildOptionsPanel.AddComponent<RectTransform>();
-        panelRect.anchorMin = new Vector2(0.5f, 0f);
-        panelRect.anchorMax = new Vector2(0.5f, 0f);
-        panelRect.pivot = new Vector2(0.5f, 0f);
-        panelRect.anchoredPosition = new Vector2(0f, 30f);
-        panelRect.sizeDelta = new Vector2(400f, 90f);
+        panelRect.anchorMin = new Vector2(0f, 0.5f);
+        panelRect.anchorMax = new Vector2(0f, 0.5f);
+        panelRect.pivot = new Vector2(0f, 0.5f);
+        panelRect.anchoredPosition = new Vector2(20f, 0f);
+        panelRect.sizeDelta = new Vector2(70f, 160f);
 
         Image panelImage = buildOptionsPanel.AddComponent<Image>();
-        panelImage.color = new Color(0.1f, 0.1f, 0.1f, 0.9f);
+        panelImage.color = new Color(0.1f, 0.1f, 0.1f, 0.85f);
 
-        HorizontalLayoutGroup layout = buildOptionsPanel.AddComponent<HorizontalLayoutGroup>();
-        layout.childAlignment = TextAnchor.MiddleCenter;
-        layout.spacing = 20;
-        layout.padding = new RectOffset(15, 15, 15, 15);
-        layout.childControlWidth = true;
-        layout.childControlHeight = true;
+        VerticalLayoutGroup vLayout = buildOptionsPanel.AddComponent<VerticalLayoutGroup>();
+        vLayout.childAlignment = TextAnchor.MiddleCenter;
+        vLayout.spacing = 15;
+        vLayout.padding = new RectOffset(10, 10, 15, 15);
+        vLayout.childControlWidth = true;
+        vLayout.childControlHeight = true;
 
-        CreateButton(buildOptionsPanel.transform, "Base (100 Oro)", () => OrderBuild(BuildingType.Base));
-        CreateButton(buildOptionsPanel.transform, "Cuartel (50 Oro)", () => OrderBuild(BuildingType.Barracks));
+        CreateSmallButton(buildOptionsPanel.transform, btnBaseIcon, () => {
+            TryOrderBuild(BuildingType.Base, COST_BASE);
+        });
+
+        CreateSmallButton(buildOptionsPanel.transform, btnBarracksIcon, () => {
+            TryOrderBuild(BuildingType.Barracks, COST_BARRACKS);
+        });
 
         buildOptionsPanel.SetActive(false);
     }
 
-    private Button CreateButton(Transform parent, string buttonText, UnityEngine.Events.UnityAction onClickAction)
+    private Button CreateSmallButton(Transform parent, Sprite iconSprite, UnityEngine.Events.UnityAction onClickAction)
     {
-        GameObject btnObj = new GameObject("Btn_" + buttonText);
+        GameObject btnObj = new GameObject("Btn_BuildingOption");
         btnObj.transform.SetParent(parent, false);
 
         LayoutElement layoutElement = btnObj.AddComponent<LayoutElement>();
-        layoutElement.preferredWidth = 150f;
-        layoutElement.preferredHeight = 50f;
+        layoutElement.preferredWidth = 45f;
+        layoutElement.preferredHeight = 45f;
 
         Image img = btnObj.AddComponent<Image>();
-        img.color = new Color(0.2f, 0.5f, 0.8f);
+        if (iconSprite != null)
+        {
+            img.sprite = iconSprite;
+            img.color = Color.white;
+        }
+        else
+        {
+            img.color = new Color(0.3f, 0.3f, 0.3f);
+        }
 
         Button btn = btnObj.AddComponent<Button>();
         btn.targetGraphic = img;
         btn.onClick.AddListener(onClickAction);
 
-        GameObject textObj = new GameObject("Text");
-        textObj.transform.SetParent(btnObj.transform, false);
-
-        RectTransform textRect = textObj.AddComponent<RectTransform>();
-        textRect.anchorMin = Vector2.zero;
-        textRect.anchorMax = Vector2.one;
-        textRect.sizeDelta = Vector2.zero;
-
-        Text text = textObj.AddComponent<Text>();
-        text.text = buttonText;
-        text.font = Resources.GetBuiltinResource<Font>("LegacyRuntime.ttf");
-        text.fontSize = 14;
-        text.alignment = TextAnchor.MiddleCenter;
-        text.color = Color.white;
-
         return btn;
     }
 
-    private void OrderBuild(BuildingType buildingType)
+    private void TryOrderBuild(BuildingType buildingType, int cost)
     {
-        if (selectedBuilder == null) return;
+        if (selectedBuilder == null)
+        {
+            Debug.LogWarning("[BuilderUI] Ningún constructor seleccionado.");
+            return;
+        }
 
         if (gameController == null)
         {
-            Debug.LogError("[BuilderUI] El controlador del juego no está inicializado.");
+            Debug.LogError("[BuilderUI] CoreGameController es nulo.");
+            return;
+        }
+
+        int currentGold = GetCurrentGold();
+        if (currentGold < cost)
+        {
+            Debug.LogWarning($"[BuilderUI] ¡Oro insuficiente! Necesitas {cost} de oro, pero solo tienes {currentGold}.");
             return;
         }
 
@@ -171,13 +221,86 @@ public class BuilderUIController : MonoBehaviour
 
         if (success)
         {
-            Debug.Log($"¡Orden de construcción enviada con éxito para: {buildingType}!");
+            Debug.Log($"¡Construcción exitosa de {buildingType}! Se descontaron {cost} de oro.");
+            SpawnBuildingVisual(buildingType, targetX, targetY, selectedBuilder.FactionId);
+
             if (buildOptionsPanel != null)
                 buildOptionsPanel.SetActive(false);
         }
         else
         {
-            Debug.LogWarning("No se pudo construir (¿Faltan recursos / oro insuficiente?).");
+            Debug.LogWarning($"[BuilderUI] El backend rechazó la orden de construir '{buildingType}'. (Posible posición bloqueada)");
         }
+    }
+
+    private int GetCurrentGold()
+    {
+        if (gameController == null) return 0;
+        var controllerType = gameController.GetType();
+        BindingFlags flags = BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance;
+
+        var factionsProp = controllerType.GetProperty("Factions", flags);
+        if (factionsProp != null)
+        {
+            var factionsDict = factionsProp.GetValue(gameController);
+            if (factionsDict != null)
+            {
+                var tryGetMethod = factionsDict.GetType().GetMethod("TryGetValue");
+                if (tryGetMethod != null)
+                {
+                    object[] args = new object[] { 1, null };
+                    bool found = (bool)tryGetMethod.Invoke(factionsDict, args);
+                    if (found && args[1] != null)
+                    {
+                        var factionRes = args[1];
+                        var goldProp = factionRes.GetType().GetProperty("Gold");
+                        if (goldProp != null)
+                        {
+                            float goldFloat = System.Convert.ToSingle(goldProp.GetValue(factionRes));
+                            return Mathf.FloorToInt(goldFloat);
+                        }
+                    }
+                }
+            }
+        }
+        return 0;
+    }
+
+
+
+    private void SpawnBuildingVisual(BuildingType buildingType, float x, float y, int factionId)
+    {
+        Sprite spriteToAssign = null;
+        string objName = "";
+        bool isAlly = (factionId == 1);
+
+        if (buildingType == BuildingType.Base)
+        {
+            spriteToAssign = isAlly ? allyBaseSprite : enemyBaseSprite;
+            objName = isAlly ? "Building_Base_Ally" : "Building_Base_Enemy";
+        }
+        else if (buildingType == BuildingType.Barracks)
+        {
+            spriteToAssign = isAlly ? allyBarracksSprite : enemyBarracksSprite;
+            objName = isAlly ? "Building_Barracks_Ally" : "Building_Barracks_Enemy";
+        }
+
+        GameObject buildingObj = new GameObject(objName);
+        buildingObj.transform.position = new Vector3(x, y, 0f);
+        buildingObj.transform.localScale = Vector3.one; 
+
+        SpriteRenderer sr = buildingObj.AddComponent<SpriteRenderer>();
+        if (spriteToAssign != null)
+        {
+            sr.sprite = spriteToAssign;
+            sr.sortingLayerName = "Default"; 
+            sr.sortingOrder = 10; 
+        }
+        else
+        {
+            Debug.LogWarning($"[BuilderUI] El sprite para {buildingType} es NULO.");
+        }
+
+        buildingObj.AddComponent<BoxCollider2D>();
     }
 }

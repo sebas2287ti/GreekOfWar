@@ -7,8 +7,8 @@ namespace Core.Controllers
 {
     public class IAController
     {
-        private const float ATTACK_TRIGGER_RANGE = 6.0f; // Rango de detección: 6 casillas
-        private const float MELEE_ATTACK_RANGE = 1.2f;   // Rango para infligir daño físico
+        private const float ATTACK_TRIGGER_RANGE = 6.0f;
+        private const float MELEE_ATTACK_RANGE = 1.2f;
 
         private readonly int _aiFactionId;
         private readonly int _playerFactionId;
@@ -19,15 +19,10 @@ namespace Core.Controllers
             _playerFactionId = playerFactionId;
         }
 
-        /// <summary>
-        /// Evalúa y ejecuta las acciones de todas las unidades de la IA.
-        /// Este método debe ser llamado desde el bucle principal de simulación del Core.
-        /// </summary>
         public void UpdateAITurn(Dictionary<int, UnitModel> units, float deltaTime)
         {
             if (units == null || units.Count == 0) return;
 
-            // Separar unidades enemigas (IA) y unidades del jugador
             List<UnitModel> aiUnits = new List<UnitModel>();
             List<UnitModel> playerUnits = new List<UnitModel>();
 
@@ -46,10 +41,8 @@ namespace Core.Controllers
                 }
             }
 
-            // Si no hay objetivos del jugador, las unidades de la IA no actúan
             if (playerUnits.Count == 0) return;
 
-            // Procesar cada unidad controlada por la IA
             foreach (UnitModel aiUnit in aiUnits)
             {
                 ProcessUnitBehavior(aiUnit, playerUnits, deltaTime);
@@ -58,29 +51,23 @@ namespace Core.Controllers
 
         private void ProcessUnitBehavior(UnitModel aiUnit, List<UnitModel> playerUnits, float deltaTime)
         {
-            // 1. Buscar la unidad del jugador más cercana
             UnitModel closestTarget = FindClosestTarget(aiUnit, playerUnits, out float distanceToTarget);
 
             if (closestTarget == null) return;
 
-            // 2. Verificar si está dentro del rango de percepción de 6 casillas
             if (distanceToTarget <= ATTACK_TRIGGER_RANGE)
             {
-                // Si ya está en distancia de cuerpo a cuerpo (ataque)
                 if (distanceToTarget <= MELEE_ATTACK_RANGE)
                 {
                     ExecuteAttack(aiUnit, closestTarget, deltaTime);
                 }
                 else
                 {
-                    // Si está entre 1.2 y 6 casillas, avanza hacia la unidad del jugador
                     MoveTowardsTarget(aiUnit, closestTarget, deltaTime);
                 }
             }
             else
             {
-                // Fuera del rango de 6 casillas: La IA ignora al objetivo y permanece quieta
-                // (Se puede añadir patrulla o comportamiento idle si se requiere)
             }
         }
 
@@ -107,18 +94,16 @@ namespace Core.Controllers
 
         private void MoveTowardsTarget(UnitModel aiUnit, UnitModel target, float deltaTime)
         {
-            float speed = 2.0f; // Velocidad de movimiento en casillas por segundo
+            float speed = 2.0f;
             float dx = target.PositionX - aiUnit.PositionX;
             float dy = target.PositionY - aiUnit.PositionY;
             float distance = (float)Math.Sqrt(dx * dx + dy * dy);
 
             if (distance > 0.01f)
             {
-                // Normalizar dirección
                 float dirX = dx / distance;
                 float dirY = dy / distance;
 
-                // Actualizar posición en el modelo del Core
                 aiUnit.PositionX += dirX * speed * deltaTime;
                 aiUnit.PositionY += dirY * speed * deltaTime;
             }
@@ -126,9 +111,8 @@ namespace Core.Controllers
 
         private void ExecuteAttack(UnitModel attacker, UnitModel target, float deltaTime)
         {
-            float attackPower = 15.0f; // Daño infligido
+            float attackPower = 15.0f;
             
-            // Infligir daño reduciendo la salud del modelo en el Core
             target.Health -= attackPower * deltaTime;
 
             if (target.Health < 0)

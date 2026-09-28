@@ -52,20 +52,21 @@ namespace UnityAdapter.Bootstrapper
 
         private void SpawnTestUnits()
         {
-            // 1. Guerrero Jugador (Facción 1) en (5, 5)
+         
             UnitModel playerWarrior = new UnitModel(id: 1, factionId: 1, type: UnitType.Warrior, x: 5f, y: 5f);
             CoreGame.Units.TryAdd(playerWarrior.Id, playerWarrior);
             CreateUnitView(playerWarrior);
 
-            // 2. Constructor Jugador (Facción 1) en (7, 5)
+        
             UnitModel playerBuilder = new UnitModel(id: 2, factionId: 1, type: UnitType.Builder, x: 7f, y: 5f);
             CoreGame.Units.TryAdd(playerBuilder.Id, playerBuilder);
             CreateUnitView(playerBuilder);
 
-            // 3. Guerrero Enemigo (Facción 2) en (25, 25)
+      
             UnitModel enemyWarrior = new UnitModel(id: 3, factionId: 2, type: UnitType.Warrior, x: 25f, y: 25f);
             CoreGame.Units.TryAdd(enemyWarrior.Id, enemyWarrior);
             CreateUnitView(enemyWarrior);
+
         }
 
         private void CreateUnitView(UnitModel model)
@@ -100,7 +101,7 @@ namespace UnityAdapter.Bootstrapper
         {
             List<int> deadUnitIds = new List<int>();
 
-            // 1. Actualizar posición y salud de cada vista activa
+
             foreach (var kvp in _unitViews)
             {
                 int unitId = kvp.Key;
@@ -116,12 +117,12 @@ namespace UnityAdapter.Bootstrapper
                 }
                 else
                 {
-                    // La unidad fue removida de la simulación del Core (murió)
+                    
                     deadUnitIds.Add(unitId);
                 }
             }
 
-            // 2. Destruir los GameObjects y limpiar el diccionario de las unidades muertas
+        
             foreach (int id in deadUnitIds)
             {
                 if (_unitViews.TryGetValue(id, out UnityUnitView view))

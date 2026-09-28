@@ -34,17 +34,15 @@ namespace UnityAdapter.Views
             ClampPosition();
         }
 
-        /// <summary>
-        /// Procesa la entrada WASD o Flechas de dirección.
-        /// </summary>
+     
         private void HandleMovement()
         {
-            float horizontal = Input.GetAxisRaw("Horizontal"); // A/D o Flechas Izq/Der
-            float vertical = Input.GetAxisRaw("Vertical");     // W/S o Flechas Arriba/Abajo
+            float horizontal = Input.GetAxisRaw("Horizontal"); 
+            float vertical = Input.GetAxisRaw("Vertical");    
 
             Vector3 direction = new Vector3(horizontal, vertical, 0f).normalized;
 
-            // Multiplicador de velocidad al presionar Shift Izquierdo
+           
             float currentSpeed = moveSpeed;
             if (Input.GetKey(KeyCode.LeftShift))
             {
@@ -53,10 +51,6 @@ namespace UnityAdapter.Views
 
             transform.position += direction * (currentSpeed * Time.deltaTime);
         }
-
-        /// <summary>
-        /// Procesa el zoom cambiando el valor de Orthographic Size con la rueda del mouse.
-        /// </summary>
         private void HandleZoom()
         {
             float scroll = Input.GetAxis("Mouse ScrollWheel");
@@ -68,9 +62,7 @@ namespace UnityAdapter.Views
             }
         }
 
-        /// <summary>
-        /// Mantiene la cámara dentro de las coordenadas permitidas del mapa.
-        /// </summary>
+
         private void ClampPosition()
         {
             if (!useMapBounds) return;
@@ -83,9 +75,7 @@ namespace UnityAdapter.Views
             transform.position = pos;
         }
 
-        /// <summary>
-        /// Asigna dinámicamente los límites del mapa según el tamaño del Grid.
-        /// </summary>
+
         public void SetMapBounds(float width, float height)
         {
             minBounds = Vector2.zero;

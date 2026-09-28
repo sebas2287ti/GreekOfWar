@@ -47,16 +47,13 @@ namespace Core.Model.Map
             return x >= 0 && x < Width && y >= 0 && y < Height;
         }
 
-        /// <summary>
-        /// Expande el tamaño del mapa preservando las celdas existentes.
-        /// </summary>
         public void ExpandMap(int newWidth, int newHeight)
         {
             if (newWidth <= Width && newHeight <= Height) return;
 
             MapCell[,] newCells = new MapCell[newWidth, newHeight];
 
-            // Copiar celdas existentes
+
             for (int x = 0; x < newWidth; x++)
             {
                 for (int y = 0; y < newHeight; y++)
@@ -67,7 +64,7 @@ namespace Core.Model.Map
                     }
                     else
                     {
-                        // Nuevas celdas creadas por defecto como Land
+                    
                         newCells[x, y] = new MapCell(x, y, CellType.Land);
                     }
                 }

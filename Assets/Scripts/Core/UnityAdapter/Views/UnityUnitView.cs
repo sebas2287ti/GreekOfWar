@@ -22,7 +22,7 @@ namespace UnityAdapter.Views
 
         private float currentHealth = 100f;
         private float maxHealth = 100f;
-        private UnitModel _model; // Referencia al modelo del backend
+        private UnitModel _model;
 
         private void Awake()
         {
@@ -41,7 +41,7 @@ namespace UnityAdapter.Views
             }
         }
 
-        // Actualiza posición y colores dinámicamente en cada frame de Unity
+        
         private void Update()
         {
             if (_model == null) return;
@@ -52,7 +52,7 @@ namespace UnityAdapter.Views
 
         public void Initialize(UnitModel model, Sprite playerWarrior, Sprite enemyWarrior, Sprite playerBuilder, Sprite enemyBuilder)
         {
-            _model = model; // Guardamos la referencia
+            _model = model;
             UnitId = model.Id;
             FactionId = model.FactionId;
             Type = model.Type;
@@ -135,15 +135,15 @@ namespace UnityAdapter.Views
 
             if (model.State == UnitState.Attack)
             {
-                spriteRenderer.color = Color.red; // Rojo al atacar
+                spriteRenderer.color = Color.red;
             }
             else if (model.State == UnitState.Moving)
             {
-                spriteRenderer.color = Color.yellow; // Amarillo al moverse
+                spriteRenderer.color = Color.yellow; 
             }
             else
             {
-                spriteRenderer.color = Color.white; // Blanco por defecto (Idle)
+                spriteRenderer.color = Color.white;
             }
         }
 

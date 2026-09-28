@@ -1,4 +1,3 @@
-// Core/Model/Entities/BuildingModel.cs
 using Core.Model.Enums;
 
 namespace Core.Model.Entities
@@ -15,10 +14,10 @@ namespace Core.Model.Entities
         public float Health { get; set; }
         public float MaxHealth { get; set; }
         
-        // Producción de recursos pasivos por segundo
+     
         public float ResourceGenerationRate { get; set; } = 5f;
 
-        // Constructor principal que requiere el SystemController
+     
         public BuildingModel(int id, int factionId, BuildingType type, float positionX, float positionY, float maxHealth = 100f)
         {
             Id = id;

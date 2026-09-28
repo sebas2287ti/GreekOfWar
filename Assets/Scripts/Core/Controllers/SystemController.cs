@@ -16,7 +16,7 @@ namespace Core.Controllers
                 {
                     int newBuildingId = Buildings.Count + 1;
                     
-                    // Asignar generación pasiva según el tipo (Base genera más, Barracks menos o nada)
+                
                     float genRate = (type == BuildingType.Base) ? 10f : 2f;
 
                     var newBuilding = new BuildingModel(

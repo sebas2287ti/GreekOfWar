@@ -16,7 +16,6 @@ namespace Core.Model.Entities
         public float PositionX { get; set; }
         public float PositionY { get; set; }
         
-        // Propiedades de navegación y objetivo
         public float TargetPositionX { get; set; }
         public float TargetPositionY { get; set; }
         public int? TargetUnitId { get; set; }

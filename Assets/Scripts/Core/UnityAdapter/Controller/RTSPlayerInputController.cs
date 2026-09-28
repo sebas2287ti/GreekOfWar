@@ -30,13 +30,13 @@ namespace UnityAdapter.Controllers
 
         private void Update()
         {
-            // Clic Izquierdo: Seleccionar Unidad
+        
             if (Input.GetMouseButtonDown(0))
             {
                 HandleLeftClick();
             }
 
-            // Clic Derecho: Ordenar Movimiento
+    
             if (Input.GetMouseButtonDown(1))
             {
                 HandleRightClick();
@@ -50,14 +50,14 @@ namespace UnityAdapter.Controllers
             Vector3 mouseWorldPos = mainCamera.ScreenToWorldPoint(Input.mousePosition);
             Vector2 mousePos2D = new Vector2(mouseWorldPos.x, mouseWorldPos.y);
 
-            // Detección directa del Collider 2D bajo el puntero
+        
             Collider2D hitCollider = Physics2D.OverlapPoint(mousePos2D);
 
             if (hitCollider != null)
             {
                 UnityUnitView unitView = hitCollider.GetComponent<UnityUnitView>();
 
-                // Seleccionar solo si pertenece a la Facción 1 (Jugador)
+            
                 if (unitView != null && unitView.FactionId == 1)
                 {
                     SelectUnit(unitView);
@@ -65,7 +65,6 @@ namespace UnityAdapter.Controllers
                 }
             }
 
-            // Clic en área vacía deselecciona
             DeselectUnit();
         }
 
@@ -83,7 +82,7 @@ namespace UnityAdapter.Controllers
                 unitModel.TargetPositionX = targetX;
                 unitModel.TargetPositionY = targetY;
                 unitModel.State = UnitState.Moving;
-                unitModel.TargetUnitId = -1; // Cancelar objetivo de ataque previo
+                unitModel.TargetUnitId = -1; 
 
                 Debug.Log($"[RTS] Orden enviada a Unidad {unitModel.Id} -> ({targetX}, {targetY})");
             }
@@ -96,7 +95,7 @@ namespace UnityAdapter.Controllers
 
             if (SelectedUnitView.TryGetComponent(out SpriteRenderer sr))
             {
-                sr.color = Color.yellow; // Resaltado amarillo
+                sr.color = Color.yellow;
             }
 
             Debug.Log($"[RTS] Unidad seleccionada ID: {unitView.UnitId}");
@@ -108,7 +107,7 @@ namespace UnityAdapter.Controllers
             {
                 if (SelectedUnitView.TryGetComponent(out SpriteRenderer sr))
                 {
-                    sr.color = Color.white; // Restaurar color normal
+                    sr.color = Color.white;
                 }
                 SelectedUnitView = null;
             }

@@ -55,15 +55,15 @@ namespace UnityAdapter.Views
             GameObject cellObj = new GameObject($"Cell_{cell.X}_{cell.Y}");
             cellObj.transform.SetParent(transform);
             
-            // Posicionamiento en plano 2D Top-Down (X e Y)
+            
             cellObj.transform.position = new Vector3(cell.X * cellSize, cell.Y * cellSize, 0f);
             
-            // Sin rotaciones 3D en 2D puro
+           
             cellObj.transform.rotation = Quaternion.identity;
 
             SpriteRenderer renderer = cellObj.AddComponent<SpriteRenderer>();
             renderer.sprite = GetSpriteForType(cell.Type);
-            renderer.sortingOrder = 0; // Capa base del suelo
+            renderer.sortingOrder = 0; 
 
             _cellViews[cell.X, cell.Y] = cellObj;
         }
