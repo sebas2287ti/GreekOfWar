@@ -1,0 +1,13 @@
+fileFormatVersion: 2
+guid: a61729a9795f81a459e5d581ac2639e7
+MonoImporter:
+  externalObjects: {}
+  serializedVersion: 2
+  defaultReferences:
+  - landPrefab: {fileID: 7320572663918407989, guid: a791eeaacc1f3f748a203a721eccb605, type: 3}
+  - waterPrefab: {instanceID: 0}
+  executionOrder: 0
+  icon: {instanceID: 0}
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 

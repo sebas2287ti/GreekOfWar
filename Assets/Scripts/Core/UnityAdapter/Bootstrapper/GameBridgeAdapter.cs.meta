@@ -1,0 +1,17 @@
+fileFormatVersion: 2
+guid: 07f662280dc6700428e6731473758c86
+MonoImporter:
+  externalObjects: {}
+  serializedVersion: 2
+  defaultReferences:
+  - mapView: {instanceID: 0}
+  - hudController: {instanceID: 0}
+  - warriorPrefab: {fileID: 6376262053862048349, guid: dd0aa28b2e9db334583047390da124fb, type: 3}
+  - builderPrefab: {instanceID: 0}
+  - castlePrefab: {instanceID: 0}
+  - towerPrefab: {instanceID: 0}
+  executionOrder: 0
+  icon: {instanceID: 0}
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 
